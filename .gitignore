@@ -1,3 +1,7 @@
+# OS
+.DS_Store
+Thumbs.db
+
 # Virtual environment
 .venv/
 venv/
@@ -13,6 +17,10 @@ __pycache__/
 dist/
 build/
 
+# PyInstaller
+*.manifest
+*.spec
+
 # IDE
 .vscode/
 .idea/
@@ -24,3 +32,4 @@ build/
 test_images/
 *.yaml
 !example_exif.yaml
+

@@ -132,6 +132,32 @@ pip install -e .
 addexif scan .
 ```
 
+## Building & Releasing
+
+### Local build (standalone executable)
+
+```bash
+pip install pyinstaller
+pyinstaller --onefile --name addexif addexif/__main__.py
+# Output: dist/addexif (or dist/addexif.exe on Windows)
+```
+
+### Automated releases (GitHub Actions)
+
+Releases are automatically built for Windows, Ubuntu, and macOS when you push a git tag:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+GitHub Actions will:
+1. Build standalone executables for all platforms
+2. Create a GitHub Release
+3. Attach binaries for download
+
+No Python installation required to run released binaries.
+
 ## Error Handling
 
 - Gracefully skip corrupted images (log warning, continue scanning)
