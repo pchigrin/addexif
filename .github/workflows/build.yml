@@ -30,10 +30,8 @@ jobs:
 
       - name: Build executable
         run: |
-          pyinstaller --onefile \
-            --name addexif \
-            --add-data "addexif:addexif" \
-            addexif/__main__.py
+          pyinstaller --onefile --name addexif --add-data "addexif:addexif" addexif/__main__.py
+        shell: bash
 
       - name: Upload artifacts (Linux)
         if: runner.os == 'Linux'
