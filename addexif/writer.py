@@ -43,7 +43,7 @@ def load_yaml_exif(yaml_path):
     return data or {}
 
 
-def write_exif_to_image(image_path, exif_dict):
+def write_exif_to_image(image_path, exif_dict, dry_run=False):
     """Write EXIF data to a JPEG image."""
     try:
         img = Image.open(image_path)
@@ -73,15 +73,16 @@ def write_exif_to_image(image_path, exif_dict):
                 except Exception:
                     pass
 
-        img.save(image_path, exif=exif_bytes)
+        if not dry_run:
+            img.save(image_path, exif=exif_bytes)
         return True
     except Exception as e:
         print(f"  Error writing EXIF to {image_path.name}: {e}")
         return False
 
 
-def write_from_yaml(folder, yaml_path, recursive=False, force_write=False):
-    """Write EXIF data from YAML to images without EXIF."""
+def write_from_yaml(folder, yaml_path, recursive=False, force_write=False, dry_run=False):
+    """Write EXIF data from YAML to images."""
     folder = Path(folder)
     exif_data = load_yaml_exif(yaml_path)
 
@@ -98,7 +99,8 @@ def write_from_yaml(folder, yaml_path, recursive=False, force_write=False):
         print(f"No JPEG images found in {folder}")
         return
 
-    print(f"Found {len(image_files)} JPEG image(s)")
+    mode_label = "[DRY RUN] " if dry_run else ""
+    print(f"{mode_label}Found {len(image_files)} JPEG image(s)")
 
     processed = 0
     skipped = 0
@@ -116,10 +118,18 @@ def write_from_yaml(folder, yaml_path, recursive=False, force_write=False):
         for key, value in exif_data.items():
             processed_exif[key] = process_datetime_placeholder(value, image_path)
 
-        if write_exif_to_image(image_path, processed_exif):
+        if dry_run:
+            print(f"  ✓ {image_path.name}")
+            for tag, value in processed_exif.items():
+                print(f"      {tag}: {value}")
+            processed += 1
+        elif write_exif_to_image(image_path, processed_exif, dry_run=False):
             print(f"  ✓ {image_path.name}")
             processed += 1
         else:
             print(f"  ✗ {image_path.name} (write failed)")
 
-    print(f"✓ Processed {processed} image(s), skipped {skipped}")
+    if dry_run:
+        print(f"✓ [DRY RUN] Would process {processed} image(s), would skip {skipped}")
+    else:
+        print(f"✓ Processed {processed} image(s), skipped {skipped}")

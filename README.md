@@ -17,7 +17,7 @@ pip install -r dependencies.txt
 Extract EXIF tags that have identical values across all images:
 
 ```bash
-python -m addexif scan .                              # Current folder
+python -m addexif scan .                             # Current folder
 python -m addexif scan /path/to/images -r            # Recursive
 python -m addexif scan . -o custom_exif.yaml         # Custom output
 ```
@@ -30,6 +30,8 @@ Apply EXIF metadata from YAML to images without existing EXIF:
 python -m addexif write . exif.yaml                  # Write to images without EXIF
 python -m addexif write . exif.yaml -fw              # Force overwrite existing EXIF
 python -m addexif write . exif.yaml -r               # Recursive
+python -m addexif write . exif.yaml -d               # Preview changes (dry run)
+python -m addexif write . exif.yaml -d -fw -r        # Dry run with all options
 ```
 
 ## YAML Format
@@ -47,6 +49,11 @@ Datetime values support placeholders:
 - `%FILE%` — file creation time
 - `%FILE_CREATION%` — file creation time
 - `%FILE_MODIFICATION%` — file modification time
+
+**Tip**: Use `-d` flag with write command to preview how placeholders will be expanded:
+```bash
+python -m addexif write . exif.yaml -d
+```
 
 ## See Also
 

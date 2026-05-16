@@ -51,6 +51,11 @@ def main():
         action="store_true",
         help="Override images with existing EXIF data"
     )
+    write_parser.add_argument(
+        "-d", "--dry-run",
+        action="store_true",
+        help="Preview changes without modifying files"
+    )
 
     args = parser.parse_args()
 
@@ -88,7 +93,8 @@ def main():
                 folder,
                 yaml_file,
                 recursive=args.recursive,
-                force_write=args.force_write
+                force_write=args.force_write,
+                dry_run=args.dry_run
             )
             return 0
         except Exception as e:

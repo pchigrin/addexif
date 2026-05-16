@@ -57,13 +57,23 @@ addexif scan /photos -r -o common.yaml      # Recursive with custom output
   - `%FILE_MODIFICATION%` → file modification time
 - Writes EXIF to images **without existing EXIF** by default
 - Use `-fw` (force write) flag to override and replace existing EXIF
+- Use `-d` (dry run) flag to preview changes without modifying files
 - Flat scan by default; use `-r` flag for recursive subdirectory scan
 
 **Command Examples**:
 ```bash
 addexif write . exif.yaml              # Write to folder
 addexif write . exif.yaml -fw -r       # Recursive, force-write existing EXIF
+addexif write . exif.yaml -d           # Preview changes without modifying
+addexif write . exif.yaml -d -fw -r    # Dry run with recursion and force-write
 ```
+
+**Dry Run Output**:
+When using `-d` flag, the command shows:
+- List of files that would be processed
+- All EXIF tags that would be applied to each file
+- Total count of files that would be processed/skipped
+- No files are actually modified
 
 ## YAML Format
 
@@ -90,6 +100,7 @@ DateTimeOriginal: %FILE%              # Same as %FILE_CREATION%
 | **Scan scope** | Flat by default, recursive with `-r` flag |
 | **Common tags** | Only tags with identical values across all images |
 | **Write scope** | Skip images with existing EXIF by default, force with `-fw` |
+| **Dry run** | Preview changes without modifying files using `-d` flag |
 | **DateTime** | Support %CURRENT%, %FILE%, %FILE_CREATION%, %FILE_MODIFICATION% |
 | **Output format** | Flat YAML (key: value pairs) |
 | **Default output** | `exif.yaml` in current directory |
@@ -144,7 +155,10 @@ Test files and fixtures live in `test_images/` (not committed; create locally fo
 1. Create test JPEGs with known EXIF
 2. Run `addexif scan test_images/ -o test_output.yaml`
 3. Verify YAML contains only common tags
-4. Run `addexif write test_images/ test_output.yaml`
-5. Verify EXIF written to images without metadata
-6. Test datetime placeholders
-7. Test `-fw` flag to override existing EXIF
+4. Run `addexif write test_images/ test_output.yaml -d`
+5. Verify dry run output shows correct tags and files
+6. Run `addexif write test_images/ test_output.yaml`
+7. Verify EXIF written to images without metadata
+8. Test datetime placeholders
+9. Test `-fw` flag to override existing EXIF
+10. Test `-d` flag with various combinations (`-d -fw`, `-d -r`, etc.)
