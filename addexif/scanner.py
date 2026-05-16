@@ -16,9 +16,13 @@ def get_all_exif(image_path):
                 tag_name = piexif.TAGS[ifd_name][tag]["name"]
                 try:
                     if isinstance(value, bytes):
-                        exif_data[tag_name] = value.decode("utf-8", errors="ignore")
+                        value = value.decode("utf-8", errors="ignore")
                     else:
-                        exif_data[tag_name] = str(value)
+                        value = str(value)
+
+                    value = value.replace('\0', '').strip()
+                    if value:
+                        exif_data[tag_name] = value
                 except Exception:
                     pass
 
