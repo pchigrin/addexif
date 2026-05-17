@@ -1,6 +1,7 @@
 import argparse
 import sys
 from pathlib import Path
+from addexif import __version__
 from addexif.scanner import scan_and_save
 from addexif.writer import write_from_yaml
 
@@ -9,6 +10,11 @@ def main():
     parser = argparse.ArgumentParser(
         prog="addexif",
         description="Manage EXIF metadata in JPEG images"
+    )
+    parser.add_argument(
+        "-V", "--version",
+        action="version",
+        version=f"addexif {__version__}"
     )
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 

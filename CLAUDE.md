@@ -151,6 +151,9 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
+Keep `__version__` in `addexif/__init__.py` consistent with a new tag.
+
+
 GitHub Actions will:
 1. Build standalone executables for all platforms
 2. Create a GitHub Release

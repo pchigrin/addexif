@@ -1,11 +1,12 @@
 from setuptools import setup, find_packages
+from addexif import __version__
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
     name="addexif",
-    version="0.1.0",
+    version=__version__,
     author="Pavel Chigrin",
     author_email="pchigrin@gmail.com",
     description="Console utility for managing EXIF metadata in JPEG images",
