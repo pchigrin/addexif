@@ -58,6 +58,11 @@ def main():
         help="Override images with existing EXIF data"
     )
     write_parser.add_argument(
+        "-k", "--keep-exist-tag",
+        action="store_true",
+        help="With --force-write, preserve existing EXIF tags not listed in YAML"
+    )
+    write_parser.add_argument(
         "-d", "--dry-run",
         action="store_true",
         help="Preview changes without modifying files"
@@ -100,6 +105,7 @@ def main():
                 yaml_file,
                 recursive=args.recursive,
                 force_write=args.force_write,
+                keep_existing_tags=args.keep_exist_tag,
                 dry_run=args.dry_run
             )
             return 0

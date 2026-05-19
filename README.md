@@ -29,9 +29,10 @@ Apply EXIF metadata from YAML to images without existing EXIF:
 ```bash
 python -m addexif write . exif.yaml                  # Write to images without EXIF
 python -m addexif write . exif.yaml -fw              # Force overwrite existing EXIF
+python -m addexif write . exif.yaml -fw -k           # Overwrite YAML tags only
 python -m addexif write . exif.yaml -r               # Recursive
 python -m addexif write . exif.yaml -d               # Preview changes (dry run)
-python -m addexif write . exif.yaml -d -fw -r        # Dry run with all options
+python -m addexif write . exif.yaml -d -fw -k -r     # Dry run with all options
 ```
 
 ## YAML Format

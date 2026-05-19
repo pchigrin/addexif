@@ -51,12 +51,12 @@ def convert_exif_value(value, tag_type):
     # piexif tag types: 1=BYTE, 2=ASCII, 3=SHORT, 4=LONG, 5=RATIONAL,
     # 6=SBYTE, 7=UNDEFINED, 8=SSHORT, 9=SLONG, 10=SRATIONAL, 11=FLOAT, 12=DOUBLE
     
-    if tag_type == 2:  # ASCII string
+    if tag_type == piexif.TYPES.Ascii:
         if isinstance(value, str):
             return value.encode("utf-8")
         return value
     
-    elif tag_type == 3 or tag_type == 8:  # SHORT or SSHORT
+    elif tag_type == piexif.TYPES.Short or tag_type == piexif.TYPES.SShort:
         if isinstance(value, str):
             try:
                 return int(value)
@@ -64,7 +64,7 @@ def convert_exif_value(value, tag_type):
                 return value
         return value
     
-    elif tag_type == 4 or tag_type == 9:  # LONG or SLONG
+    elif tag_type == piexif.TYPES.Long or tag_type == piexif.TYPES.SLong:
         if isinstance(value, str):
             try:
                 return int(value)
@@ -72,7 +72,7 @@ def convert_exif_value(value, tag_type):
                 return value
         return value
     
-    elif tag_type == 5 or tag_type == 10:  # RATIONAL or SRATIONAL
+    elif tag_type == piexif.TYPES.Rational or tag_type == piexif.TYPES.SRational:
         if isinstance(value, (list, tuple)):
             return tuple(value)
         elif isinstance(value, str):
@@ -88,7 +88,7 @@ def convert_exif_value(value, tag_type):
                 pass
         return value
 
-    elif tag_type == 7:  # UNDEFINED (bytes)
+    elif tag_type == piexif.TYPES.Undefined:
         if isinstance(value, str):
             # Handle escaped characters like "\x01\x02\x03"
             return value.encode("utf-8")
@@ -97,13 +97,23 @@ def convert_exif_value(value, tag_type):
     return value
 
 
-def write_exif_to_image(image_path, exif_dict, dry_run=False):
+def write_exif_to_image(image_path, exif_dict, keep_existing_tags=False):
     """Write EXIF data to a JPEG image."""
     try:
         img = Image.open(image_path)
 
-        # Initialize IFD structure
-        ifd_dict = {"0th": {}, "Exif": {}, "GPS": {}, "1st": {}}
+        if keep_existing_tags:
+            try:
+                ifd_dict = piexif.load(str(image_path))
+            except Exception:
+                ifd_dict = {}
+        else:
+            ifd_dict = {}
+
+        # Ensure piexif has the standard IFD structure before applying YAML tags.
+        for ifd in ("0th", "Exif", "GPS", "Interop", "1st"):
+            ifd_dict.setdefault(ifd, {})
+        ifd_dict.setdefault("thumbnail", None)
 
         for key, value in exif_dict.items():
             tag_id = None
@@ -111,14 +121,14 @@ def write_exif_to_image(image_path, exif_dict, dry_run=False):
             tag_type = None
 
             # Search for tag in standard EXIF tags
-            for ifd in ("0th", "Exif", "GPS", "1st"):
+            for ifd in ("0th", "Exif", "GPS", "Interop", "1st"):
                 if ifd not in piexif.TAGS:
                     continue
                 for tid, tag_info in piexif.TAGS[ifd].items():
                     if tag_info["name"] == key:
                         tag_id = tid
                         ifd_name = ifd
-                        tag_type = tag_info.get("type", 2)  # Default to ASCII
+                        tag_type = tag_info.get("type", piexif.TYPES.Ascii)  # Default to ASCII
                         break
                 if tag_id:
                     break
@@ -138,17 +148,25 @@ def write_exif_to_image(image_path, exif_dict, dry_run=False):
             # If dump fails due to invalid tags, try without problematic IFDs
             exif_bytes = piexif.dump({"0th": ifd_dict.get("0th", {}), 
                                       "Exif": ifd_dict.get("Exif", {}),
+                                      "Interop": ifd_dict.get("Interop", {}),
                                       "GPS": ifd_dict.get("GPS", {})})
 
-        if not dry_run:
-            img.save(image_path, exif=exif_bytes)
+        img.save(image_path, exif=exif_bytes)
+
         return True
     except Exception as e:
         print(f"  Error writing EXIF to {image_path.name}: {e}")
         return False
 
 
-def write_from_yaml(folder, yaml_path, recursive=False, force_write=False, dry_run=False):
+def write_from_yaml(
+    folder,
+    yaml_path,
+    recursive=False,
+    force_write=False,
+    keep_existing_tags=False,
+    dry_run=False,
+):
     """Write EXIF data from YAML to images."""
     folder = Path(folder)
     exif_data = load_yaml_exif(yaml_path)
@@ -190,7 +208,11 @@ def write_from_yaml(folder, yaml_path, recursive=False, force_write=False, dry_r
             for tag, value in processed_exif.items():
                 print(f"      {tag}: {value}")
             processed += 1
-        elif write_exif_to_image(image_path, processed_exif, dry_run=False):
+        elif write_exif_to_image(
+            image_path,
+            processed_exif,
+            keep_existing_tags=keep_existing_tags,
+        ):
             print(f"  ✓ {image_path.name}")
             processed += 1
         else:
